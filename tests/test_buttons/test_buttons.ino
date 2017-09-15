@@ -1,3 +1,5 @@
+//test buttons
+
 //vals
 static char sign = 0;  // Holds -1, 1 or 0 to turn the motor on/off and control direction
 
