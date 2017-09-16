@@ -108,7 +108,7 @@
   boolean stateRun = false;
   boolean stateOutputs = false;
   const int sliderHome = 0;
-  const int homeSpeed = 10000;
+  const int homeSpeed = 4000;
   int currentBasePos;
   int currentSpeed = 0;
   int encoderPos = 0;
@@ -510,7 +510,7 @@ void loop() {
 #endif  
 
 #ifdef DEBUG_SPEED
-  Serial.print("SPEED:"); Serial.print(stepper1.speed());
+  Serial.print("SPEED:"); Serial.print(currentSpeed);
   Serial.println("");
 #endif
 
