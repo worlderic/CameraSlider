@@ -254,7 +254,7 @@ delay(1000);
   delay(1000);
 #endif
 
-#ifdef MOTO_DISABLE_OPTION
+#ifdef MOTOR_DISABLE_OPTION
   stepper1.disableOutputs();
 #endif  
 
@@ -303,8 +303,8 @@ delay(1000);
     Serial.println ("MOTOR_ENABLE_DISABLE_OPTION: ON");
   #endif
 
-  #ifdef MOTO_DISABLE_OPTION
-    Serial.println ("MOTO_DISABLE_OPTION: ON");
+  #ifdef MOTOR_DISABLE_OPTION
+    Serial.println ("MOTOR_DISABLE_OPTION: ON");
   #endif
 
   #ifdef LCD_BASIC
@@ -372,7 +372,7 @@ void loop() {
   
     stepper1.stop();
   
-    #ifdef MOTO_DISABLE_OPTION
+    #ifdef MOTOR_DISABLE_OPTION
       stepper1.disableOutputs();
     #endif    
   
@@ -405,7 +405,7 @@ void loop() {
     stepper1.runToNewPosition(sliderTotalSteps);
     stepper1.runToNewPosition(0);
     
-    #ifdef MOTO_DISABLE_OPTION
+    #ifdef MOTOR_DISABLE_OPTION
       stepper1.disableOutputs();
     #endif
     
@@ -456,7 +456,7 @@ void loop() {
     encoderPos = 0;
     encoderPosTemp = 0;         
     
-    #ifdef MOTO_DISABLE_OPTION
+    #ifdef MOTOR_DISABLE_OPTION
       stepper1.disableOutputs();
     #endif  
   
