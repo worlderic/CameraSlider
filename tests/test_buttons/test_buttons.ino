@@ -1,16 +1,14 @@
 //test buttons
 
-//vals
-static char sign = 0;  // Holds -1, 1 or 0 to turn the motor on/off and control direction
-
 //pins
 #define encoderPinA 2
 #define encoderPinB 3
-#define ZIGZAG_PIN 7 
-#define LEFT_PIN 5
-#define STOP_PIN 4
-#define RIGHT_PIN 6
+#define zigzagPin 7 
+#define revPin 5
+#define stopPin 4
+#define fwdPin 6
 #define enabledriver 8
+#define accelMovePin 11
 
 
 void setup() {
@@ -19,16 +17,19 @@ void setup() {
     Serial.println("start");
   
   //button
-  pinMode(LEFT_PIN, INPUT_PULLUP);
-  pinMode(STOP_PIN, INPUT_PULLUP);
-  pinMode(RIGHT_PIN, INPUT_PULLUP);
-  pinMode(ZIGZAG_PIN, INPUT_PULLUP);
+  pinMode(revPin, INPUT_PULLUP);
+  pinMode(stopPin, INPUT_PULLUP);
+  pinMode(fwdPin, INPUT_PULLUP);
+  pinMode(zigzagPin, INPUT_PULLUP);
+  pinMode(accelMovePin, INPUT_PULLUP);
 
-  Serial.println(digitalRead(LEFT_PIN));
-  Serial.println(digitalRead(STOP_PIN));
-  Serial.println(digitalRead(RIGHT_PIN));
-  Serial.println(digitalRead(ZIGZAG_PIN));
-
+  Serial.println("pins state");
+  Serial.println(digitalRead(stopPin));
+  Serial.println(digitalRead(revPin));
+  Serial.println(digitalRead(fwdPin));
+  Serial.println(digitalRead(zigzagPin));
+  Serial.println(digitalRead(accelMovePin));
+  Serial.println("");
 
 }
 
@@ -36,35 +37,35 @@ void loop() {
 
 
   // If a switch is pushed down (low), set the sign value appropriately
-  if (digitalRead(LEFT_PIN) == 0) {
+  if (digitalRead(revPin) == 0) {
     delay(250);
-    sign = 1;
     // debug
-    Serial.println("-1");
+    Serial.println("revPin");
 
   }
 
-  else if (digitalRead(RIGHT_PIN) == 0) {
+  else if (digitalRead(fwdPin) == 0) {
     delay(250);
-    sign = -1;
     // debug
-    Serial.println("1");
+    Serial.println("fwdPin");
   }
 
-  else if (digitalRead(STOP_PIN) == 0) {
+  else if (digitalRead(stopPin) == 0) {
     delay(250);
-    sign = 0;
     // debug
-    Serial.println("0");
+    Serial.println("stopPin");
   }
 
-  else if (digitalRead(ZIGZAG_PIN) == 0) {
+  else if (digitalRead(zigzagPin) == 0) {
     delay(250);
-    sign = 1;
     // debug
     Serial.println("ZIGZAG");
   }
 
-
+  else if (digitalRead(accelMovePin) == 0 ) {
+    delay(250);
+      //debug
+      Serial.println("ACCEL_MOVE");
+  }
 }
 
