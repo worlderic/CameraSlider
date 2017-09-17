@@ -18,7 +18,8 @@
 *  13 motorEnbDisPin
 *  A0 pin_MS_M1 microstepping
 *  A1 pin_MS_M2 microstepping
-*  A2 pin_MS_STATE
+*  A2 pin_MS_M2 microstepping
+*  A3 pin_MS_STATE
 *  RS = A2 LCD
 *  EN = A3 LCD
 *  D4 = A4 LCD
@@ -53,7 +54,7 @@
 #define MICRO_STEP    // define MICRO_STEP or MICRO_STEP_BASIC
 //#define MICRO_STEP_BASIC // define MICRO_STEP or MICRO_STEP_BASIC
 //#define MOTOR_ENABLE_DISABLE_OPTION // button to enable or disable motors when not running OR #define MOTOR_DISABLE_OPTION
-#define MOTOR_DISABLE_OPTION // no button to disable or enable motores when not running OR #define MOTOR_ENABLE_DISABLE_OPTION
+//#define MOTOR_DISABLE_OPTION // no button to disable or enable motores when not running OR #define MOTOR_ENABLE_DISABLE_OPTION
 //#define LCD_BASIC
 
 
@@ -80,26 +81,27 @@
 
 #ifdef ZIGZAG_MOVE
   const int zigzagPin = 7;
-  int zigzagMaxSpeed, zigzagAccel; 
+  float zigzagMaxSpeed, zigzagAccel; 
 #endif
 
 #ifdef ACCEL_MOVE
   const int accelMovePin = 11;
-  int accelMoveMaxSpeed, accelMovePinAccel, accelMoveMaxSpeedBrake, accelMoveMaxAccelBrake;
+  float accelMoveMaxSpeed, accelMovePinAccel, accelMoveMaxSpeedBrake, accelMoveMaxAccelBrake;
   long accelPosOvershoot;
   long accelPosIntermediate;
 #endif
 
 #ifdef MICRO_STEP_BASIC
   const int pinSdReset = 12; //stepper driver reset pin
-  const int stepper1MaxAccel = 2000;
+  const int pin_MS_M0 = A0, pin_MS_M1 = A1, pin_MS_M2 = A2;
+  const float stepper1MaxAccel = 2000;
   const long sliderTotalSteps = 27000;
 #endif
 
 #ifdef MICRO_STEP
   const int pinSdReset = 12; //stepper driver reset pin for microstepping change
-  const int pin_MS_M0 = A0, pin_MS_M1 = A1, pin_MS_STATE = A2;
-  int stepper1MaxSpeed, stepper1MaxAccel;
+  const int pin_MS_M0 = A0, pin_MS_M1 = A1, pin_MS_M2 = A2, pin_MS_STATE = A3;
+  float stepper1MaxSpeed, stepper1MaxAccel;
   long sliderTotalSteps;
 #endif
 
@@ -107,17 +109,17 @@
   const int encoderMax = 23; // encoder turns 24
   boolean stateRun = false;
   boolean stateOutputs = false;
-  const int sliderHome = 0;
-  const int homeSpeed = 4000;
-  int currentBasePos;
-  int currentSpeed = 0;
+  const long sliderHome = 0;
+  const float homeSpeed = 4000;
+  long currentBasePos;
+  float currentSpeed = 0;
   int encoderPos = 0;
   int encoderPosTemp = 0;
-  unsigned int lastReportedPos = 1;   
+  unsigned long lastReportedPos = 1;   
   static boolean rotating = false;   
   boolean A_set = false;
   boolean B_set = false;
-  int speedArray[24]={0,1,2,4,6,8,10,12,15,20,25,35,50,75,125,225,375,550,750,1000,1350,1750,2750,4000};
+  int speedArray[24]={0,1,2,4,8,16,32,64,128,256,512,768,1024,1280,1536,1792,2048,2304,2560,2816,3072,3328,3584,3840};
 
 void setup() {
 
@@ -158,21 +160,23 @@ void setup() {
 #ifdef MICRO_STEP
   pinMode( pin_MS_M0, OUTPUT);
   pinMode( pin_MS_M1, OUTPUT);
+  pinMode( pin_MS_M2, OUTPUT);
   pinMode( pin_MS_STATE, OUTPUT); //change to INPUP_PULLUP when button upgrade
   pinMode( pinSdReset, OUTPUT);
   digitalWrite( pinSdReset, HIGH);
   
-  digitalWrite( pin_MS_STATE, LOW); // LOW 1/2 ; HIGH 1/4 //delete when button upgrade
+  digitalWrite( pin_MS_STATE, HIGH); // LOW 1/2 ; HIGH 1/4 //delete when button upgrade
 
-  // micro stepping 1/2
+  // micro stepping 1/2 HLL
   if ( digitalRead(pin_MS_STATE) == 0 ){
     digitalWrite( pin_MS_M0, HIGH);
     digitalWrite( pin_MS_M1, LOW);   
+    digitalWrite( pin_MS_M2, LOW);   
     digitalWrite( pinSdReset, LOW);
     delay(500);
     digitalWrite( pinSdReset, HIGH);
     delay(500);      
-    stepper1MaxAccel = 4000;
+    stepper1MaxAccel = 2000;
     sliderTotalSteps = 13500;
 
     #ifdef ZIGZAG_MOVE
@@ -190,15 +194,16 @@ void setup() {
     #endif
   }
 
-  // micro stepping 1/4
+  // micro stepping 1/4 LHL
   else if ( digitalRead(pin_MS_STATE) == 1 ){
     digitalWrite( pin_MS_M0, LOW);
-    digitalWrite( pin_MS_M1, HIGH);    
+    digitalWrite( pin_MS_M1, HIGH); 
+    digitalWrite( pin_MS_M2, LOW);   
     digitalWrite( pinSdReset, LOW);
     delay(500);
     digitalWrite( pinSdReset, HIGH);
     delay(500);
-    stepper1MaxAccel = 4000;
+    stepper1MaxAccel = 2000;
     sliderTotalSteps = 27000;
     
     #ifdef ZIGZAG_MOVE
@@ -218,8 +223,18 @@ void setup() {
 #endif
 
 #ifdef MICRO_STEP_BASIC
+  pinMode( pin_MS_M0, OUTPUT);
+  pinMode( pin_MS_M1, OUTPUT);
+  pinMode( pin_MS_M2, OUTPUT);
   pinMode( pinSdReset, OUTPUT);
+  
+  digitalWrite( pinSdReset, LOW);
   digitalWrite( pinSdReset, HIGH);
+  
+  digitalWrite( pin_MS_M0, LOW);
+  digitalWrite( pin_MS_M1, HIGH);    
+  digitalWrite( pin_MS_M2, LOW);   
+
   
   #ifdef ZIGZAG_MOVE
     zigzagMaxSpeed = 4000;
@@ -481,12 +496,12 @@ void loop() {
   stepper1.setMaxSpeed(currentSpeed);
   stepper1.run();
   #ifdef MOTOR_DISABLE_OPTION
-    if (stepper1.isRunning() == 0) {
+    if (stepper1.isRunning() == false) {
       delay(250);
       stepper1.disableOutputs();
     }
   #endif
-
+  
 #ifdef DEBUG_ENCODER
   if (lastReportedPos != encoderPos) {
     Serial.print("ENCODER:");
@@ -504,7 +519,6 @@ void loop() {
     Serial.print("\t");
     Serial.print("POSITION:"); Serial.print(stepper1.currentPosition());
     Serial.println("");
-    delay(250);
     lastReportedPos = encoderPos;
   }
 #endif  
