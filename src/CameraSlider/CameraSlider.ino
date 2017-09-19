@@ -15,7 +15,7 @@
 *  10 DIRECTION
 *  11 accelMovePin
 *  12 pinSdReset
-*  13 motorEnbDisPin
+*  A4 motorEnbDisPin
 *  A0 pin_MS_M1 microstepping
 *  A1 pin_MS_M2 microstepping
 *  A2 pin_MS_M2 microstepping
@@ -34,8 +34,8 @@
 *  High  High  High  1/32 step
 */
 
-//#define DEBUG
-//#define DEBUG_SETUP
+#define DEBUG
+#define DEBUG_SETUP
 //#define DEBUG_BUTTONS
 //#define DEBUG_ENCODER
 //#define DEBUG_RUNMOTOR
@@ -55,7 +55,7 @@
   AccelStepper stepper1(AccelStepper::DRIVER, 9, 10); // pins 9 STEP  10 DIRECTION
 
 #ifdef MOTOR_ENABLE_DISABLE_OPTION
-  const int motorEnableDisablePin = 13;
+  const int motorEnableDisablePin = A4;
 #endif
 
 #ifdef ZIGZAG_MOVE
@@ -129,7 +129,7 @@ void setup() {
   #endif
 
 //stepper driver setup
-  delay(3000);
+  delay(1000);
   stepper1.setPinsInverted(false, false, true);
   stepper1.setEnablePin(enableDriver);
 
@@ -297,7 +297,7 @@ delay(1000);
   #ifdef ACCEL_MOVE
     Serial.println ("ACCEL_MOVE: ON");     
   #endif 
-  delay(7500);
+  delay(1000);
 #endif 
 }
 
@@ -327,9 +327,16 @@ void runstepper1(){
   currentSpeed = speedArray[encoderPosTemp];
   stepper1.setMaxSpeed(currentSpeed);
   stepper1.run();
+  #ifdef MOTOR_ENABLE_DISABLE_OPTION
+    if (stepper1.isRunning() == false) {
+      delay(50);
+      motorEnableDisable();
+    }
+  #endif
+    
   #ifdef MOTOR_DISABLE_OPTION
     if (stepper1.isRunning() == false) {
-      delay(250);
+      delay(50);
       stepper1.disableOutputs();
     }
   #endif
@@ -512,11 +519,11 @@ void doEncoderB() {
 // MOTOR_ENABLE_DISABLE_OPTION function
 #ifdef MOTOR_ENABLE_DISABLE_OPTION
 void motorEnableDisable(){
-    if ( motorEnableDisablePin == HIGH){
-      stepper1.disableOutputs();
-     }  
-    else {
+    if ( digitalRead(motorEnableDisablePin) == 0 ){
       stepper1.enableOutputs();
+     }  
+    else if ( digitalRead(motorEnableDisablePin) == 1 ) {
+      stepper1.disableOutputs();
     }      
 }
 #endif
