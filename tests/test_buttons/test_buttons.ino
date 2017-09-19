@@ -9,6 +9,8 @@
 #define fwdPin 6
 #define enabledriver 8
 #define accelMovePin 11
+#define motorEnableDisablePin A4
+
 
 
 void setup() {
@@ -22,6 +24,8 @@ void setup() {
   pinMode(fwdPin, INPUT_PULLUP);
   pinMode(zigzagPin, INPUT_PULLUP);
   pinMode(accelMovePin, INPUT_PULLUP);
+  pinMode(motorEnableDisablePin, INPUT_PULLUP);
+
 
   Serial.println("pins state");
   Serial.println(digitalRead(stopPin));
@@ -29,6 +33,8 @@ void setup() {
   Serial.println(digitalRead(fwdPin));
   Serial.println(digitalRead(zigzagPin));
   Serial.println(digitalRead(accelMovePin));
+  Serial.println(digitalRead(motorEnableDisablePin));
+
   Serial.println("");
 
 }
@@ -59,13 +65,20 @@ void loop() {
   else if (digitalRead(zigzagPin) == 0) {
     delay(250);
     // debug
-    Serial.println("ZIGZAG");
+    Serial.println("zigzagPin");
   }
 
   else if (digitalRead(accelMovePin) == 0 ) {
     delay(250);
       //debug
-      Serial.println("ACCEL_MOVE");
+      Serial.println("accelMovePin");
   }
+
+  else if (digitalRead(motorEnableDisablePin) == 0 ) {
+    delay(250);
+      //debug
+      Serial.println("motorEnableDisablePin");
+  }
+  
 }
 
