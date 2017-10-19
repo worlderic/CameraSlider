@@ -1,15 +1,15 @@
 //CameraSlider based on V9 file
 
 #include <AccelStepper.h>
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
 
 /* PIN numbers 
 *  2 encoderPinA
 *  3 encoderPinB
-*  4 stopPin
-*  5 revPin
-*  6 fwdPin
-*  7 zigzagPin
+*  A0 stopPin
+*  A1 revPin
+*  A2 fwdPin
+*  A3 zigzagPin
 *  8 enableDriver
 *  9 STEP
 *  10 DIRECTION
@@ -34,23 +34,26 @@
 *  High  High  High  1/32 step
 */
 
-#define DEBUG
-#define DEBUG_SETUP
+//#define DEBUG
+//#define DEBUG_SETUP
 //#define DEBUG_BUTTONS
 //#define DEBUG_ENCODER
 //#define DEBUG_RUNMOTOR
+//#define DEBUG_SETUP_LENGTH_OPTION
+
 
 //define features
-#define ACCEL_MOVE // accelerate until reach the end of slider
-#define ZIGZAG_MOVE // zigzap to the end of slider and back to home pos
-#define MICRO_STEP    // define MICRO_STEP or MICRO_STEP_BASIC
-//#define MICRO_STEP_BASIC // define MICRO_STEP or MICRO_STEP_BASIC
-#define MOTOR_ENABLE_DISABLE_OPTION // button to enable or disable motors when not running OR #define MOTOR_DISABLE_OPTION
-//#define MOTOR_DISABLE_OPTION // no button to disable or enable motores when not running OR #define MOTOR_ENABLE_DISABLE_OPTION
+//#define ACCEL_MOVE // accelerate until reach the end of slider
+//#define ZIGZAG_MOVE // zigzap to the end of slider and back to home pos
+//#define MICRO_STEP    // define MICRO_STEP or MICRO_STEP_BASIC
+#define MICRO_STEP_BASIC // define MICRO_STEP or MICRO_STEP_BASIC
+//#define MOTOR_ENABLE_DISABLE_OPTION // button to enable or disable motors when not running OR #define MOTOR_DISABLE_OPTION
+#define MOTOR_DISABLE_OPTION // no button to disable or enable motores when not running OR #define MOTOR_ENABLE_DISABLE_OPTION
+#define SETUP_LENGTH_OPTION
 
 //define basic pins
   const int encoderPinA = 2, encoderPinB = 3; //Encoder pin interrupts
-  const int revPin = 5, stopPin = 4, fwdPin = 6; //Reverse Foward Stop pins
+  const int stopPin = A0, revPin = A1, fwdPin = A2; //Reverse Foward Stop pins
   const int enableDriver = 8; // enable driver pin
   AccelStepper stepper1(AccelStepper::DRIVER, 9, 10); // pins 9 STEP  10 DIRECTION
 
@@ -59,7 +62,7 @@
 #endif
 
 #ifdef ZIGZAG_MOVE
-  const int zigzagPin = 7;
+  const int zigzagPin = A3;
   float zigzagMaxSpeed, zigzagAccel; 
 #endif
 
@@ -71,10 +74,11 @@
 #endif
 
 #ifdef MICRO_STEP_BASIC
-  const int pinSdReset = 12; //stepper driver reset pin
-  const int pin_MS_M0 = A0, pin_MS_M1 = A1, pin_MS_M2 = A2;
+  //const int pinSdReset = 12; //stepper driver reset pin
+  //const int pin_MS_M0 = A0, pin_MS_M1 = A1, pin_MS_M2 = A2;
+  const int pin_MS_M1 = 6, pin_MS_M2 = 7;
   const float stepper1MaxAccel = 2000;
-  const long sliderTotalSteps = 27000;
+  long sliderTotalSteps = 7450; //  150mm/27000steps   50mm/7400steps 
 #endif
 
 #ifdef MICRO_STEP
@@ -98,7 +102,9 @@
   boolean A_set = false;
   boolean B_set = false;
   int speedArray[24]={0,1,2,4,8,16,32,64,128,256,512,768,1024,1280,1536,1792,2048,2304,2560,2816,3072,3328,3584,3840};
-
+  unsigned long previousMillis; // the timer
+  unsigned long currentMillis;
+                                                
 
 ///////////////// SETUP
 void setup() {
@@ -203,18 +209,18 @@ void setup() {
 
 //MICRO_STEP_BASIC 1/4 LHL
 #ifdef MICRO_STEP_BASIC 
-  pinMode( pin_MS_M0, OUTPUT);
+  //pinMode( pin_MS_M0, OUTPUT);
   pinMode( pin_MS_M1, OUTPUT);
   pinMode( pin_MS_M2, OUTPUT);
-  pinMode( pinSdReset, OUTPUT);
+  //pinMode( pinSdReset, OUTPUT);
   
-  digitalWrite( pinSdReset, LOW);
-  digitalWrite( pinSdReset, HIGH);
+  //digitalWrite( pinSdReset, LOW);
+  //digitalWrite( pinSdReset, HIGH);
   
-  digitalWrite( pin_MS_M0, LOW);
-  digitalWrite( pin_MS_M1, HIGH);    
-  digitalWrite( pin_MS_M2, LOW);   
-
+  //digitalWrite( pin_MS_M0, LOW);
+  digitalWrite( pin_MS_M1, LOW);    
+  digitalWrite( pin_MS_M2, HIGH);   
+  
   
   #ifdef ZIGZAG_MOVE
     zigzagMaxSpeed = 4000;
@@ -243,6 +249,17 @@ void setup() {
 #endif 
 
 delay(1000);
+
+#ifdef SETUP_LENGTH_OPTION
+  previousMillis = millis(); // start timer
+
+  while( millis() < previousMillis + 5000){
+    if (digitalRead(stopPin) == 0){
+      sliderTotalSteps = 27000;
+    }
+  }
+#endif 
+  
 
 //////////////////   DEBUG
 #ifdef DEBUG
@@ -297,6 +314,12 @@ delay(1000);
   #ifdef ACCEL_MOVE
     Serial.println ("ACCEL_MOVE: ON");     
   #endif 
+
+  #ifdef SETUP_LENGTH_OPTION
+    Serial.println ("SETUP_LENGTH_OPTION: ON");     
+    Serial.println (sliderTotalSteps); 
+  #endif
+  
   delay(1000);
 #endif 
 }

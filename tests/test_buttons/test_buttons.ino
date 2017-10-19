@@ -6,10 +6,10 @@ static char sign = 0;  // Holds -1, 1 or 0 to turn the motor on/off and control 
 //pins
 #define encoderPinA 2
 #define encoderPinB 3
-#define ZIGZAG_PIN 7 
-#define LEFT_PIN 5
-#define STOP_PIN 4
-#define RIGHT_PIN 6
+#define ZIGZAG_PIN A3 
+#define LEFT_PIN A1
+#define STOP_PIN A0
+#define RIGHT_PIN A2
 #define enabledriver 8
 
 
